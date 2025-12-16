@@ -5,8 +5,8 @@ on:
     branches: [ "main" ]
 
 env:
-  AWS_REGION: us-east-1
-  ECR_REPO: mlops-cloud
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPO: ${{ secrets.ECR_REPO }}
 
 jobs:
   build-and-push:
