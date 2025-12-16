@@ -6,8 +6,19 @@ import pickle
 import os
 import base64
 
+def _read_csv_safe(path: str) -> pd.DataFrame:
+    """
+    Read CSV with UTF-8 fallback handling for CI/Linux environments.
+    """
+    try:
+        return pd.read_csv(path, encoding="utf-8")
+    except UnicodeDecodeError:
+        return pd.read_csv(path, encoding="latin1")
+
 def load_data():
-    df = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/file.csv"))
+    # df = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/file.csv"))
+    csv_path = os.path.join(os.path.dirname(__file__), "../data/file.csv")
+    df = _read_csv_safe(csv_path)
     serialized_data = pickle.dumps(df)
     return base64.b64encode(serialized_data).decode("ascii")
 
@@ -64,7 +75,9 @@ def load_model_elbow(filename: str, sse: list):
     print(f"Optimal no. of clusters: {kl.elbow}")
 
     # predict on raw test data (matches your original code)
-    df = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/test.csv"))
+    # df = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/test.csv"))
+    test_csv_path = os.path.join(os.path.dirname(__file__), "../data/test.csv")
+    df = _read_csv_safe(test_csv_path)
     pred = loaded_model.predict(df)[0]
 
     # ensure JSON-safe return
