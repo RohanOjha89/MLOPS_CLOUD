@@ -1,4 +1,3 @@
-dags/data/*.csv
 dags/model/
 __pycache__/
 .DS_Store
