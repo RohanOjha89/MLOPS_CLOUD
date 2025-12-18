@@ -71,7 +71,9 @@ def load_model_elbow(filename: str, sse: list):
     loaded_model = pickle.load(open(output_path, "rb"))
 
     # elbow for information/logging
-    kl = KneeLocator(range(1, 50), sse, curve="convex", direction="decreasing")
+    x = list(range(1, len(sse) + 1))
+    kl = KneeLocator(x, sse, curve="convex", direction="decreasing")
+    # kl = KneeLocator(range(1, 50), sse, curve="convex", direction="decreasing")
     print(f"Optimal no. of clusters: {kl.elbow}")
 
     # predict on raw test data (matches your original code)
