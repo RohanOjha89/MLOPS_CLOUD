@@ -1,61 +1,85 @@
-# Import necessary libraries and modules
 from airflow import DAG
-# from airflow.operators.python import PythonOperator
-from airflow.providers.standard.operators.python import PythonOperator
-from datetime import datetime, timedelta
-from src.ml_pipeline import load_data, data_preprocessing, build_save_model, load_model_elbow
+from airflow.utils.dates import days_ago
+from airflow.providers.amazon.aws.operators.ecs import EcsRunTaskOperator
+from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-# NOTE:
-# In Airflow 3.x, enabling XCom pickling should be done via environment variable:
-# export AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True
-# The old airflow.configuration API is deprecated.
+AWS_REGION = "us-east-1"
 
-# Define default arguments for your DAG
-default_args = {
-    'owner': 'your_name',
-    'start_date': datetime(2025, 1, 15),
-    'retries': 0,  # Number of retries in case of task failure
-    'retry_delay': timedelta(minutes=5),  # Delay before retries
-}
+# --- Your AWS resources ---
+ECS_CLUSTER = "mlops-cloud-cluster"
+TASK_DEFINITION = "mlops-cloud-train-task"   # or "mlops-cloud-train-task:REVISION"
+CONTAINER_NAME = "training"                  # must match container name in task definition
 
-# Create a DAG instance named 'Airflow_Lab1' with the defined default arguments
+S3_BUCKET = "roh-mlops-cloud"
+S3_PREFIX = "mlops-cloud"
+
+# --- Networking (Fargate in private subnets) ---
+SUBNETS = [
+    "subnet-071a9e87f1459ae19",
+    "subnet-0d955939c035dcbcc",
+    # "subnet-PRIVATE1",
+    # "subnet-PRIVATE2",
+]
+# SECURITY_GROUPS = ["sg-YOUR_ECS_TASK_SG"]
+SECURITY_GROUPS = ["sg-0c84776bf4a0b2528"]
+
 with DAG(
-    'Airflow_Lab1',
-    default_args=default_args,
-    description='Dag example for Lab 1 of Airflow series',
+    dag_id="Airflow_ECS_Fargate_Training",
+    start_date=days_ago(1),
+    schedule=None,
     catchup=False,
+    tags=["ecs", "fargate", "mlops"],
 ) as dag:
 
-    # Task to load data, calls the 'load_data' Python function
-    load_data_task = PythonOperator(
-        task_id='load_data_task',
-        python_callable=load_data,
+    run_id = "{{ ts_nodash }}"
+    metrics_key = f"{S3_PREFIX}/metrics/{run_id}.json"
+    model_key = f"{S3_PREFIX}/artifacts/{run_id}/kmeans.pkl"
+
+    run_training_on_fargate = EcsRunTaskOperator(
+        task_id="run_training_on_fargate",
+        cluster=ECS_CLUSTER,
+        task_definition=TASK_DEFINITION,
+        launch_type="FARGATE",
+        region_name=AWS_REGION,
+        aws_conn_id="aws_default",
+        network_configuration={
+            "awsvpcConfiguration": {
+                "subnets": SUBNETS,
+                "securityGroups": SECURITY_GROUPS,
+                "assignPublicIp": "DISABLED",
+            }
+        },
+        overrides={
+            "containerOverrides": [
+                {
+                    "name": CONTAINER_NAME,
+                    "environment": [
+                        {"name": "S3_BUCKET", "value": S3_BUCKET},
+                        {"name": "S3_PREFIX", "value": S3_PREFIX},
+                        {"name": "RUN_ID", "value": run_id},
+                    ],
+                }
+            ]
+        },
+        wait_for_completion=True,
     )
 
-    # Task to perform data preprocessing, depends on 'load_data_task'
-    data_preprocessing_task = PythonOperator(
-        task_id='data_preprocessing_task',
-        python_callable=data_preprocessing,
-        op_args=[load_data_task.output],
+    wait_for_metrics = S3KeySensor(
+        task_id="wait_for_metrics",
+        bucket_name=S3_BUCKET,
+        bucket_key=metrics_key,
+        aws_conn_id="aws_default",
+        timeout=60 * 20,
+        poke_interval=20,
     )
 
-    # Task to build and save a model, depends on 'data_preprocessing_task'
-    build_save_model_task = PythonOperator(
-        task_id='build_save_model_task',
-        python_callable=build_save_model,
-        op_args=[data_preprocessing_task.output, "model.sav"],
+    wait_for_model = S3KeySensor(
+        task_id="wait_for_model",
+        bucket_name=S3_BUCKET,
+        bucket_key=model_key,
+        aws_conn_id="aws_default",
+        timeout=60 * 20,
+        poke_interval=20,
     )
 
-    # Task to load a model using the 'load_model_elbow' function, depends on 'build_save_model_task'
-    load_model_task = PythonOperator(
-        task_id='load_model_task',
-        python_callable=load_model_elbow,
-        op_args=["model.sav", build_save_model_task.output],
-    )
-
-    # Set task dependencies
-    load_data_task >> data_preprocessing_task >> build_save_model_task >> load_model_task
-
-# If this script is run directly, allow command-line interaction with the DAG
-if __name__ == "__main__":
-    dag.test()
+    run_training_on_fargate >> [wait_for_metrics, wait_for_model]
