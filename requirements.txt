@@ -5,3 +5,8 @@ numpy>=1.24
 
 # Testing (CI only, but fine to keep here for a lab)
 pytest>=7.4
+
+# Installing Amazon provider in the Airflow image
+apache-airflow-providers-amazon
+boto3
+botocore
