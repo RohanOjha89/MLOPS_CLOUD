@@ -10,3 +10,4 @@ pytest>=7.4
 apache-airflow-providers-amazon
 boto3
 botocore
+apache-airflow-providers-fab
