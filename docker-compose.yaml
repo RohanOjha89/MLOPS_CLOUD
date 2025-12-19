@@ -22,16 +22,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
     command: >
-      bash -lc "
-      airflow db migrate &&
-      airflow users create
-        --username admin
-        --password admin
-        --firstname admin
-        --lastname admin
-        --role Admin
-        --email admin@example.com
-      "
+      bash -lc "airflow db migrate"
 
   airflow-scheduler:
     build:
