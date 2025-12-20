@@ -23,16 +23,7 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     command: >
-      bash -lc "
-      airflow db migrate &&
-      airflow users create \
-        --username admin \
-        --password admin \
-        --firstname Admin \
-        --lastname User \
-        --role Admin \
-        --email admin@example.com
-      "
+      bash -lc "airflow db migrate && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
 
   airflow-scheduler:
     build:
