@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.utils.dates import days_ago
+from datetime import datetime
 from airflow.providers.amazon.aws.operators.ecs import EcsRunTaskOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
@@ -25,7 +25,7 @@ SECURITY_GROUPS = ["sg-0c84776bf4a0b2528"]
 
 with DAG(
     dag_id="Airflow_ECS_Fargate_Training",
-    start_date=days_ago(1),
+    start_date=datetime(2025, 1, 1),
     schedule=None,
     catchup=False,
     tags=["ecs", "fargate", "mlops"],
