@@ -209,8 +209,8 @@ services:
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
       AIRFLOW__FAB__UPDATE_PERMS: "False"
       PYTHONPATH: /opt/airflow/dags
-    # command: bash -lc "airflow api-server --host 0.0.0.0 --port 8793"
-    command: bash -lc "airflow execution-api --host 0.0.0.0 --port 8793"
+    command: bash -lc "airflow api-server --host 0.0.0.0 --port 8793"
+    # command: bash -lc "airflow execution-api --host 0.0.0.0 --port 8793"
     ports:
       - "8793:8793"
     volumes:
