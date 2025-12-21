@@ -35,6 +35,7 @@ services:
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__FAB__UPDATE_PERMS: "False"
       PYTHONPATH: /opt/airflow/dags
 
       # Optional but recommended for reliable AWS profile usage
@@ -73,6 +74,7 @@ services:
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__FAB__UPDATE_PERMS: "False"
       PYTHONPATH: /opt/airflow/dags
 
       AWS_PROFILE: default
@@ -105,6 +107,7 @@ services:
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__FAB__UPDATE_PERMS: "False"
       PYTHONPATH: /opt/airflow/dags
 
       AWS_PROFILE: default
@@ -137,6 +140,7 @@ services:
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__FAB__UPDATE_PERMS: "False"
       PYTHONPATH: /opt/airflow/dags
 
       AWS_PROFILE: default
@@ -171,6 +175,7 @@ services:
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__FAB__UPDATE_PERMS: "False"
       PYTHONPATH: /opt/airflow/dags
 
       AWS_PROFILE: default
@@ -202,8 +207,10 @@ services:
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__FAB__UPDATE_PERMS: "False"
       PYTHONPATH: /opt/airflow/dags
-    command: bash -lc "airflow api-server --host 0.0.0.0 --port 8793"
+    # command: bash -lc "airflow api-server --host 0.0.0.0 --port 8793"
+    command: bash -lc "airflow execution-api --host 0.0.0.0 --port 8793"
     ports:
       - "8793:8793"
     volumes:
