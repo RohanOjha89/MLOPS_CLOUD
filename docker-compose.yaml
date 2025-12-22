@@ -183,8 +183,7 @@ services:
       AWS_SHARED_CREDENTIALS_FILE: /home/airflow/.aws/credentials
       AWS_CONFIG_FILE: /home/airflow/.aws/config
       HOME: /home/airflow
-    # command: bash -lc "airflow api-server --host 0.0.0.0 --port 8080"
-    command: bash -lc "airflow webserver --host 0.0.0.0 --port 8080"
+    command: bash -lc "airflow api-server --host 0.0.0.0 --port 8080"
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
